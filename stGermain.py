@@ -4,6 +4,8 @@ import random
 import json
 from discord.ext import commands
 
+from src.tarot.tarot import tripleSpread
+
 logging.basicConfig()
 description = 'St. Germain of The White Lodge'
 intents = discord.Intents.default()
@@ -16,7 +18,7 @@ bot = commands.Bot(
     intents=intents
 )
 
-with open("../data/stGermain.json", "r") as configjsonFile:
+with open("data/stGermain.json", "r") as configjsonFile:
     configData = json.load(configjsonFile)
     TOKEN = configData["API_TOKEN"]
 
@@ -47,6 +49,11 @@ async def letters(ctx, amount):
 
     else:
         await ctx.send('No.')
+
+
+@bot.command()
+async def tarot(ctx):
+    await tripleSpread(ctx)
 
 
 bot.run(TOKEN)
