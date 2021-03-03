@@ -1,11 +1,10 @@
 import discord
 import logging
-import random
 import json
 from discord.ext import commands
 
 from src.tarot.magicEight import magicEightBall
-from src.tarot.tarot import tripleSpread
+from src.tarot.tarot import tripleSpread, cardDesc
 
 logging.basicConfig()
 description = 'St. Germain of The White Lodge'
@@ -40,6 +39,11 @@ async def add(ctx, left: int, right: int):
 @bot.command()
 async def tarot(ctx):
     await tripleSpread(ctx)
+
+
+@bot.command()
+async def description(ctx, cardName):
+    await cardDesc(ctx, cardName)
 
 
 @bot.command()

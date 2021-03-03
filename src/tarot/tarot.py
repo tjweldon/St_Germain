@@ -4,6 +4,20 @@ import random
 from src.tarot.magicEight import magicEightBall
 
 
+async def cardDesc(ctx, cardName):
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://rws-cards-api.herokuapp.com/api/v1/cards/") as deck:
+            if deck.status == 200:
+                if cardName == "The" or cardName == "the":
+                    await ctx.send("Please use a specific card keyword: eg. Devil, Judgment etc")
+
+                else:
+                    fullDeck = await deck.json()
+                    for card in range(fullDeck["nhits"]):
+                        if cardName in fullDeck["cards"][card]["name"]:
+                            await ctx.send(fullDeck["cards"][card]["desc"])
+
+
 async def tripleSpread(ctx):
     # Retrieves 3 random cards as JSON.
     # If API response is OK, creates a variable to hold the username and prepares cards.
