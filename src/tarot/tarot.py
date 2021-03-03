@@ -36,8 +36,4 @@ async def tripleSpread(ctx):
                                        )
 
             else:
-                magicEightBall(ctx)
-
-
-async def magicEight(ctx):
-    magicEightBall(ctx)
+                await magicEightBall(ctx)
