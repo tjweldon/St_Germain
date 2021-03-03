@@ -4,18 +4,39 @@ import random
 from src.tarot.magicEight import magicEightBall
 
 
-async def cardDesc(ctx, cardName):
+async def cardDesc(ctx, first, second, third):
+    # Retrieves the description of a card by its name.
+    # Single search terms will return all cards containing that term in the name.
+    # EG. Searching "Knight" will retrieve ALL Knights.
+    # Searching a suit (Swords, Cups, Wands, Pentacles) will retrieve all cards in the suit.
     async with aiohttp.ClientSession() as session:
         async with session.get("https://rws-cards-api.herokuapp.com/api/v1/cards/") as deck:
             if deck.status == 200:
-                if cardName == "The" or cardName == "the":
-                    await ctx.send("Please use a specific card keyword: eg. Devil, Judgment etc")
 
-                else:
-                    fullDeck = await deck.json()
-                    for card in range(fullDeck["nhits"]):
-                        if cardName in fullDeck["cards"][card]["name"]:
-                            await ctx.send(fullDeck["cards"][card]["desc"])
+                if third == '':
+                    cardName = first + ' ' + second
+
+                if second == '':
+                    cardName = first
+
+                if third != '':
+                    cardName = first + ' ' + second + ' ' + third
+
+                fullDeck = await deck.json()
+                allCards = range(fullDeck["nhits"])
+                cardCount = 0
+                for card in allCards:
+                    if cardName in fullDeck["cards"][card]["name"]:
+                        await ctx.send(fullDeck["cards"][card]["desc"])
+                    if cardName not in fullDeck["cards"][card]["name"]:
+                        cardCount += 1
+
+                if cardCount > max(allCards):
+                    await ctx.send("Please check your input. Search is case sensitive.\n"
+                                   "Search either by a single term, or match the examples.\n"
+                                   "Major Arcana: Wheel Of Fortune\n"
+                                   "Minor Arcana: Knight of Swords\n"
+                                   "Single Term: Knight / Ace / Devil etc.")
 
 
 async def tripleSpread(ctx):

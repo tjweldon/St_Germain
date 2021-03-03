@@ -42,8 +42,8 @@ async def tarot(ctx):
 
 
 @bot.command()
-async def description(ctx, cardName):
-    await cardDesc(ctx, cardName)
+async def describe(ctx, first='', second='', third=''):
+    await cardDesc(ctx, first, second, third)
 
 
 @bot.command()
