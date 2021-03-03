@@ -4,6 +4,7 @@ import random
 import json
 from discord.ext import commands
 
+from src.tarot.magicEight import magicEightBall
 from src.tarot.tarot import tripleSpread
 
 logging.basicConfig()
@@ -37,23 +38,13 @@ async def add(ctx, left: int, right: int):
 
 
 @bot.command()
-async def letters(ctx, amount):
-    lettersList = ['a', 'b', 'c', 'd', 'e', 'f']
-    user = str(ctx.author)
-    if int(amount) <= len(lettersList):
-        await ctx.send('Very well ' + user)
-        for each in range(int(amount)):
-            index = random.randint(0, len(lettersList) - 1)
-            await ctx.send(lettersList[index])
-            lettersList.remove(lettersList[index])
-
-    else:
-        await ctx.send('No.')
+async def tarot(ctx):
+    await tripleSpread(ctx)
 
 
 @bot.command()
-async def tarot(ctx):
-    await tripleSpread(ctx)
+async def magicEight(ctx):
+    await magicEightBall(ctx)
 
 
 bot.run(TOKEN)
