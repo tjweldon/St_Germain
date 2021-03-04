@@ -1,6 +1,7 @@
 import discord
 import logging
-import json
+#import json
+import os
 from discord.ext import commands
 from src.server import keepAlive
 from src.tarot.magicEight import magicEightBall
@@ -18,9 +19,11 @@ bot = commands.Bot(
     intents=intents
 )
 
-with open("data/stGermain.json", "r") as configjsonFile:
-    configData = json.load(configjsonFile)
-    TOKEN = configData["API_TOKEN"]
+TOKEN = os.getenv("API_KEY")
+
+#with open("data/stGermain.json", "r") as configjsonFile:
+#    configData = json.load(configjsonFile)
+#    TOKEN = configData["API_TOKEN"]
 
 
 @bot.event
