@@ -27,16 +27,16 @@ async def cardDesc(ctx, first, second, third):
                 cardCount = 0
                 for card in allCards:
                     if cardName in fullDeck["cards"][card]["name"]:
-                        await ctx.send(fullDeck["cards"][card]["desc"])
+                        await ctx.send("```" + fullDeck["cards"][card]["desc"] + "```")
                     if cardName not in fullDeck["cards"][card]["name"]:
                         cardCount += 1
 
                 if cardCount > max(allCards):
-                    await ctx.send("Please check your input. Search is case sensitive.\n"
-                                   "Search either by a single term, or match the examples.\n"
-                                   "Major Arcana: Wheel Of Fortune\n"
-                                   "Minor Arcana: Knight of Swords\n"
-                                   "Single Term: Knight / Ace / Devil etc.")
+                    await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
+                                           "Search either by a single term, or match the examples.\n"
+                                           "Major Arcana: Wheel Of Fortune\n"
+                                           "Minor Arcana: Knight of Swords\n"
+                                           "Single Term: Knight / Ace / Devil etc." + "```")
 
 
 async def tripleSpread(ctx):
@@ -58,16 +58,16 @@ async def tripleSpread(ctx):
                     orientation = random.randint(0, 1)
 
                     if orientation == 0:
-                        await ctx.send('***' + cards["cards"][card]["name"] + '***' +
-                                       ' ***' + ':\n\n' + '***' +
-                                       cards["cards"][card]["meaning_up"] + someLines
+                        await ctx.send("***" + "```" + cards["cards"][card]["name"] +
+                                       ':\n\n' +
+                                       cards["cards"][card]["meaning_up"] + someLines + "```" + "***"
                                        )
 
                     elif orientation == 1:
-                        await ctx.send("[Rev.] " +
-                                       '***' + cards["cards"][card]["name"] + '***' +
-                                       ' ***' + ':\n\n' + '***' +
-                                       cards["cards"][card]["meaning_rev"] + someLines
+                        await ctx.send("***" + "```" + "[Rev.]" +
+                                       cards["cards"][card]["name"] +
+                                       ':\n\n' +
+                                       cards["cards"][card]["meaning_rev"] + someLines + "```" + "***"
                                        )
 
             else:
