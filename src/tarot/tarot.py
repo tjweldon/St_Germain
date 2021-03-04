@@ -4,6 +4,17 @@ import random
 from src.tarot.magicEight import magicEightBall
 
 
+async def searchTerms(first, second, third):
+    cardName = None
+    if third == '':
+        cardName = first + ' ' + second
+    if second == '':
+        cardName = first
+    if third != '':
+        cardName = first + ' ' + second + ' ' + third
+    return cardName
+
+
 async def cardDesc(ctx, first, second, third):
     # Retrieves the description of a card by its name.
     # Single search terms will return all cards containing that term in the name.
@@ -13,14 +24,7 @@ async def cardDesc(ctx, first, second, third):
         async with session.get("https://rws-cards-api.herokuapp.com/api/v1/cards/") as deck:
             if deck.status == 200:
 
-                if third == '':
-                    cardName = first + ' ' + second
-
-                if second == '':
-                    cardName = first
-
-                if third != '':
-                    cardName = first + ' ' + second + ' ' + third
+                cardName = await searchTerms(first, second, third)
 
                 fullDeck = await deck.json()
                 allCards = range(fullDeck["nhits"])

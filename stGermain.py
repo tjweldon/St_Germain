@@ -25,6 +25,12 @@ async def on_ready():
     print('The veil is parted.')
     print(bot.user.name + ' ' + 'has arrived.')
     print('~*~*~*~*~*~*~*~*~*')
+    await bot.change_presence(
+        activity=discord.Activity(
+            type=discord.ActivityType.watching,
+            name="White Lodge Dreamers"
+        )
+    )
 
 
 @bot.command()
@@ -46,6 +52,7 @@ async def describe(ctx, first='', second='', third=''):
 @bot.command()
 async def magicEight(ctx):
     await magicEightBall(ctx)
+
 
 if token.repl is True:
     keepAlive.keepAlive()
