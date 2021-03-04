@@ -2,7 +2,7 @@ import discord
 import logging
 import json
 from discord.ext import commands
-
+from src.server import keepAlive
 from src.tarot.magicEight import magicEightBall
 from src.tarot.tarot import tripleSpread, cardDesc
 
@@ -50,5 +50,5 @@ async def describe(ctx, first='', second='', third=''):
 async def magicEight(ctx):
     await magicEightBall(ctx)
 
-
+keepAlive.keepAlive()
 bot.run(TOKEN)
