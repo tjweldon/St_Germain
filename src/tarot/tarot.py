@@ -39,6 +39,64 @@ async def getFullDeck():
                 return fullDeck
 
 
+async def getMeanings(ctx, message: str):
+    cardName = message
+    fullDeck = await getFullDeck()
+    allCards = range(fullDeck["nhits"])
+
+    invalidTerms = [
+        "Ace",
+        "King",
+        "Queen",
+        "Knight",
+        "Page",
+        "Wands",
+        "Cups",
+        "Swords",
+        "Pentacles",
+        "One",
+        "Two",
+        "Three",
+        "Four",
+        "Five",
+        "Six",
+        "Seven",
+        "Eight",
+        "Nine",
+        "Ten",
+        "",
+    ]
+
+    meaning = ""
+    meaningRev = ""
+
+    if cardName in invalidTerms:
+        await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
+                               "Images should be searched by complete name.\n"
+                               "Major Arcana: Wheel Of Fortune\n"
+                               "Minor Arcana: Knight of Swords\n" + "```")
+
+    else:
+        cardCount = 0
+        for card in allCards:
+            if cardName in fullDeck["cards"][card]["name"]:
+                meaning = fullDeck["cards"][card]["meaning_up"]
+                meaningRev = fullDeck["cards"][card]["meaning_rev"]
+
+            if cardName not in fullDeck["cards"][card]["name"]:
+                cardCount += 1
+
+        if cardCount > max(allCards):
+            await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
+                                   "Images should be searched by complete name.\n"
+                                   "Major Arcana: Wheel Of Fortune\n"
+                                   "Minor Arcana: Knight of Swords\n" + "```")
+
+        else:
+            await ctx.send("```" + f"Upright: {meaning}" + "```")
+            await ctx.send("```" + f"Reversed: {meaningRev}" + "```")
+
+
 async def getCardImage(ctx, message: str):
     cardName = message
     fullDeck = await getFullDeck()
