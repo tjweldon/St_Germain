@@ -48,6 +48,7 @@ async def getCardImage(ctx, message: str):
         "King",
         "Queen",
         "Knight",
+        "Page",
         "Wands",
         "Cups",
         "Swords",
