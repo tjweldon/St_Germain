@@ -6,27 +6,29 @@ import discord
 from src.tarot.magicEight import magicEightBall
 
 
-async def searchTerms(first, second, third) -> str:
-    """
-    Parses the users provided card name.
-    :param first: eg. "Knight"
-    :param second: eg. "of"
-    :param third: eg. "Swords"
-    :return: "Knight of Swords"
-    """
-    cardName = None
-    if third == '':
-        cardName = first + ' ' + second
-    if second == '':
-        cardName = first
-    if third != '':
-        cardName = first + ' ' + second + ' ' + third
+# Deprecated message parse function below.
 
-    # Ensures a blank search field doesn't send the entire list of cards.
-    if first == '':
-        cardName = 'invalid'
-
-    return cardName
+# async def searchTerms(first, second, third) -> str:
+#     """
+#     Parses the users provided card name.
+#     :param first: eg. "Knight"
+#     :param second: eg. "of"
+#     :param third: eg. "Swords"
+#     :return: "Knight of Swords"
+#     """
+#     cardName = None
+#     if third == '':
+#         cardName = first + ' ' + second
+#     if second == '':
+#         cardName = first
+#     if third != '':
+#         cardName = first + ' ' + second + ' ' + third
+#
+#     # Ensures a blank search field doesn't send the entire list of cards.
+#     if first == '':
+#         cardName = 'invalid'
+#
+#     return cardName
 
 
 async def getFullDeck():
@@ -102,7 +104,7 @@ async def cardDesc(ctx, message: str):
     allCards = range(fullDeck["nhits"])
     cardCount = 0
 
-    if cardName is '':
+    if cardName == '':
         await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
                                "Search either by a single term, or match the examples.\n"
                                "Major Arcana: Wheel Of Fortune\n"
