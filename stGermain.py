@@ -45,13 +45,13 @@ async def tarot(ctx):
 
 
 @bot.command()
-async def describe(ctx, first='', second='', third=''):
-    await cardDesc(ctx, first, second, third)
+async def describe(ctx, *, message=''):
+    await cardDesc(ctx, message)
 
 
 @bot.command()
-async def image(ctx, first='', second='', third=''):
-    await getCardImage(ctx, first, second, third)
+async def image(ctx, *, message=''):
+    await getCardImage(ctx, message)
 
 
 @bot.command()

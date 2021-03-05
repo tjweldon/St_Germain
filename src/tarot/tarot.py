@@ -37,8 +37,8 @@ async def getFullDeck():
                 return fullDeck
 
 
-async def getCardImage(ctx, first, second, third):
-    cardName = await searchTerms(first, second, third)
+async def getCardImage(ctx, message: str):
+    cardName = message
     fullDeck = await getFullDeck()
     allCards = range(fullDeck["nhits"])
     invalidTerms = [
@@ -60,6 +60,7 @@ async def getCardImage(ctx, first, second, third):
         "Eight",
         "Nine",
         "Ten",
+        "",
     ]
 
     shortName = ""
@@ -91,28 +92,36 @@ async def getCardImage(ctx, first, second, third):
                 await ctx.send(file=discord.File(cardImage, f"{cardName}.jpg"))
 
 
-async def cardDesc(ctx, first, second, third):
+async def cardDesc(ctx, message: str):
     # Retrieves the description of a card by its name.
     # Single search terms will return all cards containing that term in the name.
     # EG. Searching "Knight" will retrieve ALL Knights.
     # Searching a suit (Swords, Cups, Wands, Pentacles) will retrieve all cards in the suit.
-    cardName = await searchTerms(first, second, third)
+    cardName = message
     fullDeck = await getFullDeck()
     allCards = range(fullDeck["nhits"])
     cardCount = 0
 
-    for card in allCards:
-        if cardName in fullDeck["cards"][card]["name"]:
-            await ctx.send("```" + fullDeck["cards"][card]["desc"] + "```")
-        if cardName not in fullDeck["cards"][card]["name"]:
-            cardCount += 1
-
-    if cardCount > max(allCards):
+    if cardName is '':
         await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
                                "Search either by a single term, or match the examples.\n"
                                "Major Arcana: Wheel Of Fortune\n"
                                "Minor Arcana: Knight of Swords\n"
                                "Single Term: Knight / Ace / Devil etc." + "```")
+
+    else:
+        for card in allCards:
+            if cardName in fullDeck["cards"][card]["name"]:
+                await ctx.send("```" + fullDeck["cards"][card]["desc"] + "```")
+            if cardName not in fullDeck["cards"][card]["name"]:
+                cardCount += 1
+
+        if cardCount > max(allCards):
+            await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
+                                   "Search either by a single term, or match the examples.\n"
+                                   "Major Arcana: Wheel Of Fortune\n"
+                                   "Minor Arcana: Knight of Swords\n"
+                                   "Single Term: Knight / Ace / Devil etc." + "```")
 
 
 async def tripleSpread(ctx):
