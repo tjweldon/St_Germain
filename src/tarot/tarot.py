@@ -39,11 +39,7 @@ async def getFullDeck():
                 return fullDeck
 
 
-async def getMeanings(ctx, message: str):
-    cardName = message
-    fullDeck = await getFullDeck()
-    allCards = range(fullDeck["nhits"])
-
+async def checkInvalid(ctx, cardName):
     invalidTerms = [
         "Ace",
         "King",
@@ -66,17 +62,29 @@ async def getMeanings(ctx, message: str):
         "Ten",
         "",
     ]
-
-    meaning = ""
-    meaningRev = ""
-
     if cardName in invalidTerms:
         await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
                                "Images should be searched by complete name.\n"
                                "Major Arcana: Wheel Of Fortune\n"
                                "Minor Arcana: Knight of Swords\n" + "```")
 
+        return False
+
     else:
+        return True
+
+
+async def getMeanings(ctx, message: str):
+    cardName = message
+    fullDeck = await getFullDeck()
+    allCards = range(fullDeck["nhits"])
+
+    meaning = ""
+    meaningRev = ""
+
+    validated = await checkInvalid(ctx, message)
+
+    if validated is True:
         cardCount = 0
         for card in allCards:
             if cardName in fullDeck["cards"][card]["name"]:
@@ -101,38 +109,12 @@ async def getCardImage(ctx, message: str):
     cardName = message
     fullDeck = await getFullDeck()
     allCards = range(fullDeck["nhits"])
-    invalidTerms = [
-        "Ace",
-        "King",
-        "Queen",
-        "Knight",
-        "Page",
-        "Wands",
-        "Cups",
-        "Swords",
-        "Pentacles",
-        "One",
-        "Two",
-        "Three",
-        "Four",
-        "Five",
-        "Six",
-        "Seven",
-        "Eight",
-        "Nine",
-        "Ten",
-        "",
-    ]
 
-    shortName = ""
+    validated = await checkInvalid(ctx, message)
+    if validated is True:
 
-    if cardName in invalidTerms:
-        await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
-                               "Images should be searched by complete name.\n"
-                               "Major Arcana: Wheel Of Fortune\n"
-                               "Minor Arcana: Knight of Swords\n" + "```")
+        shortName = ""
 
-    else:
         cardCount = 0
         for card in allCards:
             if cardName in fullDeck["cards"][card]["name"]:
@@ -146,11 +128,13 @@ async def getCardImage(ctx, message: str):
                                    "Major Arcana: Wheel Of Fortune\n"
                                    "Minor Arcana: Knight of Swords\n" + "```")
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get("https://www.sacred-texts.com/tarot/pkt/img/" + shortName + ".jpg") as image:
-            if image.status == 200:
-                cardImage = io.BytesIO(await image.read())
-                await ctx.send(file=discord.File(cardImage, f"{cardName}.jpg"))
+        async with aiohttp.ClientSession() as session:
+            async with session.get("https://www.sacred-texts.com/tarot/pkt/img/" + shortName + ".jpg") as image:
+                if image.status == 200:
+                    cardImage = io.BytesIO(await image.read())
+                    await ctx.send(file=discord.File(cardImage, f"{cardName}.jpg"))
+                else:
+                    await ctx.send("Please check input.")
 
 
 async def cardDesc(ctx, message: str):
