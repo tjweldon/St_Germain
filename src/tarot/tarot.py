@@ -1,10 +1,19 @@
+import io
 import aiohttp
-import asyncio
 import random
+import discord
+
 from src.tarot.magicEight import magicEightBall
 
 
-async def searchTerms(first, second, third):
+async def searchTerms(first, second, third) -> str:
+    """
+    Parses the users provided card name.
+    :param first: eg. "Knight"
+    :param second: eg. "of"
+    :param third: eg. "Swords"
+    :return: "Knight of Swords"
+    """
     cardName = None
     if third == '':
         cardName = first + ' ' + second
@@ -12,7 +21,74 @@ async def searchTerms(first, second, third):
         cardName = first
     if third != '':
         cardName = first + ' ' + second + ' ' + third
+
+    # Ensures a blank search field doesn't send the entire list of cards.
+    if first == '':
+        cardName = 'invalid'
+
     return cardName
+
+
+async def getFullDeck():
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://rws-cards-api.herokuapp.com/api/v1/cards/") as deck:
+            if deck.status == 200:
+                fullDeck = await deck.json()
+                return fullDeck
+
+
+async def getCardImage(ctx, first, second, third):
+    cardName = await searchTerms(first, second, third)
+    fullDeck = await getFullDeck()
+    allCards = range(fullDeck["nhits"])
+    invalidTerms = [
+        "Ace",
+        "King",
+        "Queen",
+        "Knight",
+        "Wands",
+        "Cups",
+        "Swords",
+        "Pentacles",
+        "One",
+        "Two",
+        "Three",
+        "Four",
+        "Five",
+        "Six",
+        "Seven",
+        "Eight",
+        "Nine",
+        "Ten",
+    ]
+
+    shortName = ""
+
+    if cardName in invalidTerms:
+        await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
+                               "Images should be searched by complete name.\n"
+                               "Major Arcana: Wheel Of Fortune\n"
+                               "Minor Arcana: Knight of Swords\n" + "```")
+
+    else:
+        cardCount = 0
+        for card in allCards:
+            if cardName in fullDeck["cards"][card]["name"]:
+                shortName = fullDeck["cards"][card]["name_short"]
+            if cardName not in fullDeck["cards"][card]["name"]:
+                cardCount += 1
+
+        if cardCount > max(allCards):
+            await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
+                                   "Images should be searched by complete name.\n"
+                                   "Major Arcana: Wheel Of Fortune\n"
+                                   "Minor Arcana: Knight of Swords\n" + "```")
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://www.sacred-texts.com/tarot/pkt/img/" + shortName + ".jpg") as image:
+            if image.status == 200:
+                cardImage = io.BytesIO(await image.read())
+                await ctx.send(file=discord.File(cardImage, f"{cardName}.jpg"))
 
 
 async def cardDesc(ctx, first, second, third):
@@ -20,27 +96,23 @@ async def cardDesc(ctx, first, second, third):
     # Single search terms will return all cards containing that term in the name.
     # EG. Searching "Knight" will retrieve ALL Knights.
     # Searching a suit (Swords, Cups, Wands, Pentacles) will retrieve all cards in the suit.
-    async with aiohttp.ClientSession() as session:
-        async with session.get("https://rws-cards-api.herokuapp.com/api/v1/cards/") as deck:
-            if deck.status == 200:
+    cardName = await searchTerms(first, second, third)
+    fullDeck = await getFullDeck()
+    allCards = range(fullDeck["nhits"])
+    cardCount = 0
 
-                cardName = await searchTerms(first, second, third)
+    for card in allCards:
+        if cardName in fullDeck["cards"][card]["name"]:
+            await ctx.send("```" + fullDeck["cards"][card]["desc"] + "```")
+        if cardName not in fullDeck["cards"][card]["name"]:
+            cardCount += 1
 
-                fullDeck = await deck.json()
-                allCards = range(fullDeck["nhits"])
-                cardCount = 0
-                for card in allCards:
-                    if cardName in fullDeck["cards"][card]["name"]:
-                        await ctx.send("```" + fullDeck["cards"][card]["desc"] + "```")
-                    if cardName not in fullDeck["cards"][card]["name"]:
-                        cardCount += 1
-
-                if cardCount > max(allCards):
-                    await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
-                                           "Search either by a single term, or match the examples.\n"
-                                           "Major Arcana: Wheel Of Fortune\n"
-                                           "Minor Arcana: Knight of Swords\n"
-                                           "Single Term: Knight / Ace / Devil etc." + "```")
+    if cardCount > max(allCards):
+        await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
+                               "Search either by a single term, or match the examples.\n"
+                               "Major Arcana: Wheel Of Fortune\n"
+                               "Minor Arcana: Knight of Swords\n"
+                               "Single Term: Knight / Ace / Devil etc." + "```")
 
 
 async def tripleSpread(ctx):

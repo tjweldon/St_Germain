@@ -3,7 +3,7 @@ import logging
 from discord.ext import commands
 from src.server import keepAlive, token
 from src.tarot.magicEight import magicEightBall
-from src.tarot.tarot import tripleSpread, cardDesc
+from src.tarot.tarot import tripleSpread, cardDesc, getCardImage
 
 logging.basicConfig()
 description = 'St. Germain of The White Lodge'
@@ -47,6 +47,11 @@ async def tarot(ctx):
 @bot.command()
 async def describe(ctx, first='', second='', third=''):
     await cardDesc(ctx, first, second, third)
+
+
+@bot.command()
+async def image(ctx, first='', second='', third=''):
+    await getCardImage(ctx, first, second, third)
 
 
 @bot.command()
