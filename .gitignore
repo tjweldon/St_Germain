@@ -1,4 +1,5 @@
 /venv/
+/images/
 .idea
 */__pycache__/
 *.pyc

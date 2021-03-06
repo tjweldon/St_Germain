@@ -2,7 +2,7 @@ import io
 import aiohttp
 import random
 import discord
-
+from PIL import Image
 from src.tarot.magicEight import magicEightBall
 
 
@@ -169,6 +169,13 @@ async def cardDesc(ctx, message: str):
                                    "Single Term: Knight / Ace / Devil etc." + "```")
 
 
+async def get_concat_h(im1, im2):
+    dst = Image.new('RGB', (im1.width + im2.width, im1.height))
+    dst.paste(im1, (0, 0))
+    dst.paste(im2, (im1.width, 0))
+    return dst
+
+
 async def tripleSpread(ctx):
     # Retrieves 3 random cards as JSON.
     # If API response is OK, creates a variable to hold the username and prepares cards.
@@ -183,9 +190,11 @@ async def tripleSpread(ctx):
                 user = str(ctx.author)  # the discord username of whoever seeks wisdom
                 await ctx.send('Very well ' + user + someLines)
                 cards = await spread.json()
+                images = []
 
                 for card in range(3):
                     orientation = random.randint(0, 1)
+                    # cardName = cards["cards"][card]["name"]
 
                     if orientation == 0:
                         await ctx.send("***" + "```" + cards["cards"][card]["name"] +
@@ -199,6 +208,22 @@ async def tripleSpread(ctx):
                                        ':\n\n' +
                                        cards["cards"][card]["meaning_rev"] + someLines + "```" + "***"
                                        )
+
+                    async with session.get("https://www.sacred-texts.com/tarot/pkt/img/"
+                                           + cards["cards"][card]["name_short"] +
+                                           ".jpg") \
+                            as image:
+
+                        if image.status == 200:
+                            cardImage = io.BytesIO(await image.read())
+                            imageConverted = Image.open(cardImage)
+                            images.append(imageConverted)
+                            # await ctx.send(file=discord.File(cardImage, f"{cardName}.jpg"))
+
+                combinedImages = await get_concat_h(images[0], images[1])
+                combinedImages = combinedImages.open()
+                await combinedImages.save("", "jpeg")
+                await ctx.send(file=discord.File(r"C:\Users\Owner\Desktop", f"spread.jpg"))
 
             else:
                 await magicEightBall(ctx)
