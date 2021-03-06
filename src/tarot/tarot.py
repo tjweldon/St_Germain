@@ -218,11 +218,13 @@ async def tripleSpread(ctx):
                             cardImage = io.BytesIO(await image.read())
                             imageConverted = Image.open(cardImage)
                             images.append(imageConverted)
-                            # await ctx.send(file=discord.File(cardImage, f"{cardName}.jpg"))
 
                 await get_concat_h(images[0], images[1])
+                firstCombination = Image.open(r"C:\Users\Owner\PycharmProjects\StGermain\images\combined.jpg")
+                await get_concat_h(firstCombination, images[2])
 
-                await ctx.send(file=discord.File(r"C:\Users\Owner\PycharmProjects\StGermain\images\combined.jpg", f"spread.jpg"))
+                await ctx.send(
+                    file=discord.File(r"C:\Users\Owner\PycharmProjects\StGermain\images\combined.jpg", f"spread.jpg"))
 
             else:
                 await magicEightBall(ctx)
