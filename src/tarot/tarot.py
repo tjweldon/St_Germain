@@ -173,7 +173,7 @@ async def get_concat_h(im1, im2):
     dst = Image.new('RGB', (im1.width + im2.width, im1.height))
     dst.paste(im1, (0, 0))
     dst.paste(im2, (im1.width, 0))
-    return dst
+    dst.save(r"C:\Users\Owner\PycharmProjects\StGermain\images\combined.jpg")
 
 
 async def tripleSpread(ctx):
@@ -220,10 +220,9 @@ async def tripleSpread(ctx):
                             images.append(imageConverted)
                             # await ctx.send(file=discord.File(cardImage, f"{cardName}.jpg"))
 
-                combinedImages = await get_concat_h(images[0], images[1])
-                combinedImages = combinedImages.open()
-                await combinedImages.save("", "jpeg")
-                await ctx.send(file=discord.File(r"C:\Users\Owner\Desktop", f"spread.jpg"))
+                await get_concat_h(images[0], images[1])
+
+                await ctx.send(file=discord.File(r"C:\Users\Owner\PycharmProjects\StGermain\images\combined.jpg", f"spread.jpg"))
 
             else:
                 await magicEightBall(ctx)
