@@ -4,6 +4,7 @@ from discord.ext import commands
 from src.server import keepAlive, token
 from src.tarot.magicEight import magicEightBall
 from src.tarot.tarot import tripleSpread, cardDesc, getCardImage, getMeanings
+from src.guidance.userGuide import userGuide
 
 logging.basicConfig()
 description = 'St. Germain of The White Lodge'
@@ -31,6 +32,11 @@ async def on_ready():
             name="White Lodge Dreamers"
         )
     )
+
+
+@bot.command()
+async def guidance(ctx):
+    await ctx.send(userGuide)
 
 
 @bot.command()
