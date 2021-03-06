@@ -70,6 +70,14 @@ async def checkInvalid(ctx, cardName):
 
         return False
 
+    # Single letter input is invalid
+    if len(cardName) == 1:
+        await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
+                               "Images should be searched by complete name.\n"
+                               "Major Arcana: Wheel Of Fortune\n"
+                               "Minor Arcana: Knight of Swords\n" + "```")
+        return False
+
     else:
         return True
 
@@ -170,6 +178,12 @@ async def cardDesc(ctx, message: str):
 
 
 async def get_concat_h(im1, im2):
+    """
+    Combines a pair of images horizontally into a single image.
+    Saves the combined image as .jpg
+    :param im1: Pillow Image object
+    :param im2: Pillow Image object
+    """
     dst = Image.new('RGB', (im1.width + im2.width, im1.height))
     dst.paste(im1, (0, 0))
     dst.paste(im2, (im1.width, 0))
@@ -192,6 +206,7 @@ async def tripleSpread(ctx):
                 cards = await spread.json()
                 images = []
 
+                # Determines card orientation and posts message in sequence.
                 for card in range(3):
                     orientation = random.randint(0, 1)
                     # cardName = cards["cards"][card]["name"]
@@ -214,15 +229,18 @@ async def tripleSpread(ctx):
                                            ".jpg") \
                             as image:
 
+                        # Appends each image to a list for manipulation.
                         if image.status == 200:
                             cardImage = io.BytesIO(await image.read())
                             imageConverted = Image.open(cardImage)
                             images.append(imageConverted)
 
+                # Combines the three images into a single image for sending.
                 await get_concat_h(images[0], images[1])
                 firstCombination = Image.open(r"C:\Users\Owner\PycharmProjects\StGermain\images\combined.jpg")
                 await get_concat_h(firstCombination, images[2])
 
+                # Sends the final combined image.
                 await ctx.send(
                     file=discord.File(r"C:\Users\Owner\PycharmProjects\StGermain\images\combined.jpg", f"spread.jpg"))
 
