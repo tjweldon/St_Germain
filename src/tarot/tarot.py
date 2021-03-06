@@ -5,6 +5,7 @@ import discord
 from PIL import Image
 from src.tarot.magicEight import magicEightBall
 
+combinedImagePath = r"C:\Users\Owner\PycharmProjects\StGermain\images\combined.jpg"
 
 # Deprecated message parse function below.
 
@@ -187,7 +188,7 @@ async def get_concat_h(im1, im2):
     dst = Image.new('RGB', (im1.width + im2.width, im1.height))
     dst.paste(im1, (0, 0))
     dst.paste(im2, (im1.width, 0))
-    dst.save(r"C:\Users\Owner\PycharmProjects\StGermain\images\combined.jpg")
+    dst.save(combinedImagePath)
 
 
 async def tripleSpread(ctx):
@@ -237,12 +238,12 @@ async def tripleSpread(ctx):
 
                 # Combines the three images into a single image for sending.
                 await get_concat_h(images[0], images[1])
-                firstCombination = Image.open(r"C:\Users\Owner\PycharmProjects\StGermain\images\combined.jpg")
+                firstCombination = Image.open(combinedImagePath)
                 await get_concat_h(firstCombination, images[2])
 
                 # Sends the final combined image.
                 await ctx.send(
-                    file=discord.File(r"C:\Users\Owner\PycharmProjects\StGermain\images\combined.jpg", f"spread.jpg"))
+                    file=discord.File(combinedImagePath, f"spread.jpg"))
 
             else:
                 await magicEightBall(ctx)
