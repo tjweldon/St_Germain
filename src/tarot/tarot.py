@@ -7,6 +7,7 @@ from src.tarot.magicEight import magicEightBall
 
 combinedImagePath = r"C:\Users\Owner\PycharmProjects\StGermain\images\combined.jpg"
 
+
 # Deprecated message parse function below.
 
 # async def searchTerms(first, second, third) -> str:

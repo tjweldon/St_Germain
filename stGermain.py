@@ -18,7 +18,15 @@ bot = commands.Bot(
     intents=intents
 )
 
-TOKEN = token.replOrLocal(token.repl)
+TOKEN = token.replOrLocal(token.repl, token.devFlag)
+whiteLodgeChannel = 817823496352169985
+
+
+def in_channel(channel_id):
+    def predicate(ctx):
+        return ctx.message.channel.id == channel_id
+
+    return commands.check(predicate)
 
 
 @bot.event
@@ -46,28 +54,32 @@ async def add(ctx, left: int, right: int):
 
 
 @bot.command()
+@in_channel(whiteLodgeChannel)
 async def tarot(ctx):
     await tripleSpread(ctx)
 
 
 @bot.command()
+@in_channel(whiteLodgeChannel)
 async def meaning(ctx, *, message=''):
     await getMeanings(ctx, message)
 
 
 @bot.command()
+@in_channel(whiteLodgeChannel)
 async def describe(ctx, *, message=''):
     await cardDesc(ctx, message)
 
 
 @bot.command()
+@in_channel(whiteLodgeChannel)
 async def image(ctx, *, message=''):
     await getCardImage(ctx, message)
 
 
 @bot.command()
-async def magicEight(ctx):
-    await magicEightBall(ctx)
+async def magicEight(ctx, *, message='question'):
+    await magicEightBall(ctx, message)
 
 
 if token.repl is True:

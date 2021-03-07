@@ -1,4 +1,5 @@
-userGuide = "```" + "The following commands are available. If a command has no example, send it alone.\n\n"  \
+userGuide = "```" + "The following commands are available. If a command has no example, send it alone.\n"  \
+            "Tarot / Meaning / Describe / Image are only available in The White Lodge. \n\n" \
             "!add: Adds two numbers together. !add 284 382\n" \
             "!magicEight: A Magic Eight ball.\n" \
             "!tarot: Presents a spread of 3 tarot cards.\n" \
