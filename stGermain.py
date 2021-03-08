@@ -19,10 +19,12 @@ bot = commands.Bot(
 )
 
 TOKEN = token.replOrLocal(token.repl, token.devFlag)
+
+# Channel ID for inChannel check.
 whiteLodgeChannel = 817823496352169985
 
 
-def in_channel(channel_id):
+def inChannel(channel_id):
     def predicate(ctx):
         return ctx.message.channel.id == channel_id
 
@@ -54,25 +56,25 @@ async def add(ctx, left: int, right: int):
 
 
 @bot.command()
-@in_channel(whiteLodgeChannel)
+@inChannel(whiteLodgeChannel)
 async def tarot(ctx, number=3):
     await tarotSpread(ctx, number)
 
 
 @bot.command()
-@in_channel(whiteLodgeChannel)
+@inChannel(whiteLodgeChannel)
 async def meaning(ctx, *, message=''):
     await getMeanings(ctx, message)
 
 
 @bot.command()
-@in_channel(whiteLodgeChannel)
+@inChannel(whiteLodgeChannel)
 async def describe(ctx, *, message=''):
     await cardDesc(ctx, message)
 
 
 @bot.command()
-@in_channel(whiteLodgeChannel)
+@inChannel(whiteLodgeChannel)
 async def image(ctx, *, message=''):
     await getCardImage(ctx, message)
 

@@ -2,7 +2,7 @@ import io
 import aiohttp
 import random
 import discord
-from PIL import Image
+from src.images.imageManipulators import combineImageListHorizontal, imageList
 from src.tarot.magicEight import magicEightBall
 
 combinedImagePath = r"C:\Users\Owner\PycharmProjects\StGermain\images\combined.jpg"
@@ -179,26 +179,6 @@ async def cardDesc(ctx, message: str):
                                    "Single Term: Knight / Ace / Devil etc." + "```")
 
 
-async def combineImagePairHorizontal(im1, im2) -> Image:
-    """
-    Combines a pair of images horizontally into a single image.
-    Saves the combined image as .jpg
-    :param im1: Pillow Image object
-    :param im2: Pillow Image object
-    """
-    imagePair = Image.new('RGB', (im1.width + im2.width, im1.height))
-    imagePair.paste(im1, (0, 0))
-    imagePair.paste(im2, (im1.width, 0))
-    return imagePair
-
-
-async def combineImageListHorizontal(imList) -> Image:
-    _im = imList.pop(0)
-    for im in imList:
-        _im = await combineImagePairHorizontal(_im, im)
-    return _im
-
-
 async def tarotSpread(ctx, numberOfCards):
     # Retrieves random cards as JSON.
     # If API response is OK, creates a variable to hold the username and prepares cards.
@@ -243,9 +223,7 @@ async def tarotSpread(ctx, numberOfCards):
 
                         # Appends each image to a list for manipulation.
                         if image.status == 200:
-                            cardImage = io.BytesIO(await image.read())
-                            imageConverted = Image.open(cardImage)
-                            images.append(imageConverted)
+                            await imageList(image, images)
 
                 finalSpread = await combineImageListHorizontal(images)
                 finalSpread.save(combinedImagePath)
