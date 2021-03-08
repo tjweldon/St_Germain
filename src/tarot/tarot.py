@@ -179,27 +179,37 @@ async def cardDesc(ctx, message: str):
                                    "Single Term: Knight / Ace / Devil etc." + "```")
 
 
-async def get_concat_h(im1, im2):
+async def combineImagePairHorizontal(im1, im2) -> Image:
     """
     Combines a pair of images horizontally into a single image.
     Saves the combined image as .jpg
     :param im1: Pillow Image object
     :param im2: Pillow Image object
     """
-    dst = Image.new('RGB', (im1.width + im2.width, im1.height))
-    dst.paste(im1, (0, 0))
-    dst.paste(im2, (im1.width, 0))
-    dst.save(combinedImagePath)
+    imagePair = Image.new('RGB', (im1.width + im2.width, im1.height))
+    imagePair.paste(im1, (0, 0))
+    imagePair.paste(im2, (im1.width, 0))
+    return imagePair
 
 
-async def tripleSpread(ctx):
-    # Retrieves 3 random cards as JSON.
+async def combineImageListHorizontal(imList) -> Image:
+    _im = imList.pop(0)
+    for im in imList:
+        _im = await combineImagePairHorizontal(_im, im)
+    return _im
+
+
+async def tarotSpread(ctx, numberOfCards):
+    # Retrieves random cards as JSON.
     # If API response is OK, creates a variable to hold the username and prepares cards.
     # Card orientation is represented as 0 or 1 (card meanings are tied to orientation)
     # Sends either the card name, or card name + * to represent a reversed card.
+    cardLimit = 7
+    if numberOfCards > cardLimit:
+        numberOfCards = 7
 
     async with aiohttp.ClientSession() as session:
-        async with session.get("https://rws-cards-api.herokuapp.com/api/v1/cards/random?n=3") as spread:
+        async with session.get(f"https://rws-cards-api.herokuapp.com/api/v1/cards/random?n={numberOfCards}") as spread:
 
             if spread.status == 200:
                 someLines = '\n__ ' + '__ ' * 21  # buffer characters for visual formatting between messages
@@ -209,7 +219,7 @@ async def tripleSpread(ctx):
                 images = []
 
                 # Determines card orientation and posts message in sequence.
-                for card in range(3):
+                for card in range(numberOfCards):
                     orientation = random.randint(0, 1)
                     # cardName = cards["cards"][card]["name"]
 
@@ -237,10 +247,8 @@ async def tripleSpread(ctx):
                             imageConverted = Image.open(cardImage)
                             images.append(imageConverted)
 
-                # Combines the three images into a single image for sending.
-                await get_concat_h(images[0], images[1])
-                firstCombination = Image.open(combinedImagePath)
-                await get_concat_h(firstCombination, images[2])
+                finalSpread = await combineImageListHorizontal(images)
+                finalSpread.save(combinedImagePath)
 
                 # Sends the final combined image.
                 await ctx.send(

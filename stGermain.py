@@ -3,7 +3,7 @@ import logging
 from discord.ext import commands
 from src.server import keepAlive, token
 from src.tarot.magicEight import magicEightBall
-from src.tarot.tarot import tripleSpread, cardDesc, getCardImage, getMeanings
+from src.tarot.tarot import tarotSpread, cardDesc, getCardImage, getMeanings
 from src.guidance.userGuide import userGuide
 
 logging.basicConfig()
@@ -55,8 +55,8 @@ async def add(ctx, left: int, right: int):
 
 @bot.command()
 @in_channel(whiteLodgeChannel)
-async def tarot(ctx):
-    await tripleSpread(ctx)
+async def tarot(ctx, number=3):
+    await tarotSpread(ctx, number)
 
 
 @bot.command()
