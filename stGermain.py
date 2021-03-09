@@ -58,7 +58,7 @@ async def add(ctx, left: int, right: int):
 
 
 @bot.command()
-# @inChannels(whiteLodgeChannel)
+@inChannels(whiteLodgeChannel)
 async def tarot(ctx, number=3):
     await tarotSpread(ctx, number)
 
