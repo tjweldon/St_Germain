@@ -1,8 +1,8 @@
 import json
 import os
 
-repl = True
 devFlag = False
+repl = not devFlag
 
 
 def replOrLocal(environment, development):

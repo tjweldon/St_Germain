@@ -6,10 +6,10 @@ from src.tarot.magicEight import magicEightBall
 from src.tarot.tarot import tarotSpread, cardDesc, getCardImage, getMeanings
 from src.guidance.userGuide import userGuide
 
+# Bot setup.
 logging.basicConfig()
 description = 'St. Germain of The White Lodge'
 intents = discord.Intents.default()
-
 intents.members = True
 
 bot = commands.Bot(
@@ -18,15 +18,17 @@ bot = commands.Bot(
     intents=intents
 )
 
+# Get correct API token path.
 TOKEN = token.replOrLocal(token.repl, token.devFlag)
 
 # Channel ID for inChannel check.
 whiteLodgeChannel = 817823496352169985
 
 
-def inChannel(channel_id):
+# Decorator for limiting commands per channel.
+def inChannels(*args):
     def predicate(ctx):
-        return ctx.message.channel.id == channel_id
+        return ctx.message.channel.id in args
 
     return commands.check(predicate)
 
@@ -56,25 +58,25 @@ async def add(ctx, left: int, right: int):
 
 
 @bot.command()
-@inChannel(whiteLodgeChannel)
+# @inChannels(whiteLodgeChannel)
 async def tarot(ctx, number=3):
     await tarotSpread(ctx, number)
 
 
 @bot.command()
-@inChannel(whiteLodgeChannel)
+@inChannels(whiteLodgeChannel)
 async def meaning(ctx, *, message=''):
     await getMeanings(ctx, message)
 
 
 @bot.command()
-@inChannel(whiteLodgeChannel)
+@inChannels(whiteLodgeChannel)
 async def describe(ctx, *, message=''):
     await cardDesc(ctx, message)
 
 
 @bot.command()
-@inChannel(whiteLodgeChannel)
+@inChannels(whiteLodgeChannel)
 async def image(ctx, *, message=''):
     await getCardImage(ctx, message)
 
