@@ -131,28 +131,27 @@ async def cardDesc(ctx, message: str):
     cardName = message
     fullDeck = await getFullDeck()
     allCards = range(fullDeck["nhits"])
-    cardCount = 0
+
+    invalidMessage = "Please check your input. Search is case sensitive.\n" \
+                     "Search either by a single term, or match the examples.\n" \
+                     "Major Arcana: Wheel Of Fortune\n" \
+                     "Minor Arcana: Knight of Swords\n" \
+                     "Single Term: Knight / Ace / Devil etc."
 
     if cardName == '':
-        await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
-                               "Search either by a single term, or match the examples.\n"
-                               "Major Arcana: Wheel Of Fortune\n"
-                               "Minor Arcana: Knight of Swords\n"
-                               "Single Term: Knight / Ace / Devil etc." + "```")
+        await ctx.send("```" + invalidMessage + "```")
 
     else:
-        for card in allCards:
-            if cardName in fullDeck["cards"][card]["name"]:
-                await ctx.send("```" + fullDeck["cards"][card]["desc"] + "```")
-            if cardName not in fullDeck["cards"][card]["name"]:
+        cardCount = 0
+        for cardIndex in allCards:
+            fullDeck = fullDeck["cards"][cardIndex]
+            if cardName in fullDeck["name"]:
+                await ctx.send("```" + fullDeck["desc"] + "```")
+            if cardName not in fullDeck["name"]:
                 cardCount += 1
 
         if cardCount > max(allCards):
-            await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
-                                   "Search either by a single term, or match the examples.\n"
-                                   "Major Arcana: Wheel Of Fortune\n"
-                                   "Minor Arcana: Knight of Swords\n"
-                                   "Single Term: Knight / Ace / Devil etc." + "```")
+            await ctx.send("```" + invalidMessage + "```")
 
 
 async def tarotSpread(ctx, numberOfCards):
