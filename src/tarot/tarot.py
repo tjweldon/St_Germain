@@ -144,10 +144,10 @@ async def cardDesc(ctx, message: str):
     else:
         cardCount = 0
         for cardIndex in allCards:
-            fullDeck = fullDeck["cards"][cardIndex]
-            if cardName in fullDeck["name"]:
-                await ctx.send("```" + fullDeck["desc"] + "```")
-            if cardName not in fullDeck["name"]:
+            card = fullDeck["cards"][cardIndex]
+            if cardName in card["name"]:
+                await ctx.send("```" + card["desc"] + "```")
+            if cardName not in card["name"]:
                 cardCount += 1
 
         if cardCount > max(allCards):
