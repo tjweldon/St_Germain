@@ -233,7 +233,7 @@ async def tarotSpread(ctx: Context, numberOfCards):
     for card in cards["cards"]:
         await sendDelimited(
             ctx,
-            await getCardMessage(card),
+            await getCardMessage(card, orientation=random.randint(0, 1)),
             delimiters=("```", "***")
         )
         image = await downloadCardImage(card)
@@ -248,7 +248,7 @@ async def tarotSpread(ctx: Context, numberOfCards):
     )
 
 
-async def getCardMessage(card: dict, orientation=random.randint(0, 1)) -> str:
+async def getCardMessage(card: dict, orientation) -> str:
     """
     Given a card and a orientation (of value 1 or 0) this will return a formatted
     message as a string
