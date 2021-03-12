@@ -58,25 +58,25 @@ async def add(ctx, left: int, right: int):
 
 
 @bot.command()
-@inChannels(whiteLodgeChannel)
+# @inChannels(whiteLodgeChannel)
 async def tarot(ctx, number=3):
     await tarotSpread(ctx, number)
 
 
 @bot.command()
-@inChannels(whiteLodgeChannel)
+# @inChannels(whiteLodgeChannel)
 async def meaning(ctx, *, message=''):
     await getMeanings(ctx, message)
 
 
 @bot.command()
-@inChannels(whiteLodgeChannel)
+# @inChannels(whiteLodgeChannel)
 async def describe(ctx, *, message=''):
     await cardDesc(ctx, message)
 
 
 @bot.command()
-@inChannels(whiteLodgeChannel)
+# @inChannels(whiteLodgeChannel)
 async def image(ctx, *, message=''):
     await getCardImage(ctx, message)
 
