@@ -1,127 +1,193 @@
 import io
+from typing import Iterable, Optional, Dict, List
+
 import aiohttp
 import random
 import discord
-from src.images.imageManipulators import combineImageListHorizontal, imageList
-from src.tarot.magicEight import magicEightBall
+from discord.ext.commands import Context
 
-combinedImagePath = r"C:\Users\Owner\PycharmProjects\StGermain\images\combined.jpg"
+from src.images.imageManipulators import combineImageListHorizontal, convertImage
+
+SPACER: str = '\n' + '__ ' * 22
+CARD_LIMIT: int = 7
+COMBINED_IMAGE_PATH: str = r"C:\Users\Owner\PycharmProjects\StGermain\images\combined.jpg"
+SUITS: List[str] = [
+    "Wands",
+    "Cups",
+    "Swords",
+    "Pentacles",
+]
+CARD_NUMBERS: List[str] = [
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+]
+CARD_COURTS: List[str] = [
+    "Ace",
+    "King",
+    "Queen",
+    "Knight",
+    "Page",
+]
+
+INVALID_MESSAGE: str = "Please check your input. Search is case sensitive.\n" \
+                       "Images should be searched by complete name.\n" \
+                       "Major Arcana: Wheel Of Fortune\n" \
+                       "Minor Arcana: Knight of Swords\n"
 
 
-async def getFullDeck():
+async def sendDelimited(ctx: Context, message: str, delimiters: Iterable[str] = ("```",)) -> None:
+    """
+    Sends a message using the passed context with any delimiters specified.
+    Delimiters should be provided as a tuple of strings, they are applied to
+    the message sequentially such that the first supplied delimiter is the innermost.
+    @param ctx:
+    @param message:
+    @param delimiters:
+    """
+    for delimiter in delimiters:
+        message = delimiter + message + delimiter
+
+    await ctx.send(message)
+
+
+async def getResponseBody(url: str) -> Optional[dict]:
+    """
+    Gets a resource at url and parses the json body to a dict,
+    returns None on failed requests.
+    @param url:
+    @return:
+    """
     async with aiohttp.ClientSession() as session:
-        async with session.get("https://rws-cards-api.herokuapp.com/api/v1/cards/") as deck:
-            if deck.status == 200:
-                fullDeck = await deck.json()
-                return fullDeck
+        async with session.get(url) as response:
+            if response.status != 200:
+                return None
+            body = await response.json()
+
+    return body
 
 
-async def checkInvalid(ctx, cardName):
-    invalidTerms = [
-        "Ace",
-        "King",
-        "Queen",
-        "Knight",
-        "Page",
-        "Wands",
-        "Cups",
-        "Swords",
-        "Pentacles",
-        "One",
-        "Two",
-        "Three",
-        "Four",
-        "Five",
-        "Six",
-        "Seven",
-        "Eight",
-        "Nine",
-        "Ten",
-        "",
-    ]
-    invalidMessage = "Please check your input. Search is case sensitive.\n" \
-                     "Images should be searched by complete name.\n" \
-                     "Major Arcana: Wheel Of Fortune\n" \
-                     "Minor Arcana: Knight of Swords\n"
+async def downloadFile(url: str) -> Optional[bytes]:
+    """
+    Downloads a file at url, returns None on failed requests.
+    @param url:
+    @return:
+    """
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            if response.status != 200:
+                return None
+            filestream = await response.read()
 
+    return filestream
+
+
+async def getFullDeck() -> Optional[dict]:
+    url = "https://rws-cards-api.herokuapp.com/api/v1/cards/"
+    return await getResponseBody(url)
+
+
+async def getRandomCards(number: int) -> Optional[dict]:
+    url = f"https://rws-cards-api.herokuapp.com/api/v1/cards/random?n={number}"
+    return await getResponseBody(url)
+
+
+async def downloadCardImage(card: Dict[str, str]) -> Optional[bytes]:
+    url = "https://www.sacred-texts.com/tarot/pkt/img/{}.jpg".format(card["name_short"])
+    return await downloadFile(url)
+
+
+async def checkInvalid(ctx: Context, cardName):
+    """
+    Responds to the discord user with an error message if they provide
+    a search term that is too generic
+    @param ctx:
+    @param cardName:
+    @return:
+    """
+    numbersOf = list(map(lambda s: f"{s} of", CARD_NUMBERS))
+    courtsOf = list(map(lambda s: f"{s} of", CARD_COURTS))
+    invalidTerms = CARD_NUMBERS + numbersOf + CARD_COURTS + courtsOf + SUITS + [""]
     if cardName in invalidTerms:
-        await ctx.send("```" + invalidMessage + "```")
-
+        await sendDelimited(ctx, INVALID_MESSAGE)
         return False
 
     # Single letter input is invalid
     if len(cardName) == 1:
-        await ctx.send("```" + invalidMessage + "```")
+        await sendDelimited(ctx, INVALID_MESSAGE)
         return False
 
+    return True
+
+
+async def getMeanings(ctx: Context, message: str):
+    """
+    Responds to the user with the meanings of the provided car
+    @param ctx:
+    @param message:
+    @return:
+    """
+    searchTerm = message
+    fullDeck = await getFullDeck()
+
+    if not await checkInvalid(ctx, message) or fullDeck is None:
+        return
+
+    meanings = {}
+    for card in fullDeck["cards"]:
+        if searchTerm in card["name"]:
+            meanings = {
+                'up': card['meaning_up'],
+                'rev': card['meaning_rev'],
+            }
+
+    if not meanings:
+        await sendDelimited(ctx, INVALID_MESSAGE)
     else:
-        return True
+        await sendDelimited(ctx, f"Upright: {meanings.get('up', '')}")
+        await sendDelimited(ctx, f"Reversed: {meanings.get('rev', '')}")
 
 
-async def getMeanings(ctx, message: str):
+async def getCardImage(ctx: Context, message: str):
+    """
+    Responds to the discord user with the image associated to a card
+    @param ctx:
+    @param message:
+    @return:
+    """
+    global INVALID_MESSAGE
     cardName = message
     fullDeck = await getFullDeck()
-    allCards = range(fullDeck["nhits"])
 
-    meaning = ""
-    meaningRev = ""
+    if not await checkInvalid(ctx, message) or fullDeck is None:
+        return
 
-    validated = await checkInvalid(ctx, message)
+    desiredCard = None
+    for card in fullDeck["cards"]:
+        if cardName in card["name"]:
+            desiredCard = card
 
-    if validated is True:
-        cardCount = 0
-        for card in allCards:
-            if cardName in fullDeck["cards"][card]["name"]:
-                meaning = fullDeck["cards"][card]["meaning_up"]
-                meaningRev = fullDeck["cards"][card]["meaning_rev"]
+    if desiredCard is None:
+        await sendDelimited(ctx, INVALID_MESSAGE)
+        return
 
-            if cardName not in fullDeck["cards"][card]["name"]:
-                cardCount += 1
+    rawImage = await downloadCardImage(desiredCard)
+    if rawImage is None:
+        await ctx.send("Please check input.")
+        return
 
-        if cardCount > max(allCards):
-            await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
-                                   "Images should be searched by complete name.\n"
-                                   "Major Arcana: Wheel Of Fortune\n"
-                                   "Minor Arcana: Knight of Swords\n" + "```")
-
-        else:
-            await ctx.send("```" + f"Upright: {meaning}" + "```")
-            await ctx.send("```" + f"Reversed: {meaningRev}" + "```")
+    cardImage = io.BytesIO(rawImage)
+    await ctx.send(file=discord.File(cardImage, f"{cardName}.jpg"))
 
 
-async def getCardImage(ctx, message: str):
-    cardName = message
-    fullDeck = await getFullDeck()
-    allCards = range(fullDeck["nhits"])
-
-    validated = await checkInvalid(ctx, message)
-    if validated is True:
-
-        shortName = ""
-
-        cardCount = 0
-        for card in allCards:
-            if cardName in fullDeck["cards"][card]["name"]:
-                shortName = fullDeck["cards"][card]["name_short"]
-            if cardName not in fullDeck["cards"][card]["name"]:
-                cardCount += 1
-
-        if cardCount > max(allCards):
-            await ctx.send("```" + "Please check your input. Search is case sensitive.\n"
-                                   "Images should be searched by complete name.\n"
-                                   "Major Arcana: Wheel Of Fortune\n"
-                                   "Minor Arcana: Knight of Swords\n" + "```")
-
-        async with aiohttp.ClientSession() as session:
-            async with session.get("https://www.sacred-texts.com/tarot/pkt/img/" + shortName + ".jpg") as image:
-                if image.status == 200:
-                    cardImage = io.BytesIO(await image.read())
-                    await ctx.send(file=discord.File(cardImage, f"{cardName}.jpg"))
-                else:
-                    await ctx.send("Please check input.")
-
-
-async def cardDesc(ctx, message: str):
+async def cardDesc(ctx: Context, message: str) -> None:
     """
     Retrieves the description of a card by its name.
     Single search terms will return all cards containing that term in the name.
@@ -129,92 +195,73 @@ async def cardDesc(ctx, message: str):
     Searching a suit (Swords, Cups, Wands, Pentacles) will retrieve all cards in the suit.
     """
     cardName = message
-    fullDeck = await getFullDeck()
-    allCards = range(fullDeck["nhits"])
-
-    invalidMessage = "Please check your input. Search is case sensitive.\n" \
-                     "Search either by a single term, or match the examples.\n" \
-                     "Major Arcana: Wheel Of Fortune\n" \
-                     "Minor Arcana: Knight of Swords\n" \
-                     "Single Term: Knight / Ace / Devil etc."
-
+    thisInvalidMessage = INVALID_MESSAGE + "Single Term: Knight / Ace / Devil etc."
     if cardName == '':
-        await ctx.send("```" + invalidMessage + "```")
+        await sendDelimited(ctx, thisInvalidMessage)
+        return
 
-    else:
-        cardCount = 0
-        for cardIndex in allCards:
-            card = fullDeck["cards"][cardIndex]
-            if cardName in card["name"]:
-                await ctx.send("```" + card["desc"] + "```")
-            if cardName not in card["name"]:
-                cardCount += 1
+    fullDeck = await getFullDeck()
+    if fullDeck is None:
+        return
 
-        if cardCount > max(allCards):
-            await ctx.send("```" + invalidMessage + "```")
+    cardsFound = False
+    for card in fullDeck["cards"]:
+        if cardName in card["name"]:
+            await sendDelimited(ctx, card['desc'])
+            cardsFound = True
+
+    if not cardsFound:
+        await sendDelimited(ctx, thisInvalidMessage)
 
 
-async def tarotSpread(ctx, numberOfCards):
+async def tarotSpread(ctx: Context, numberOfCards):
     """
     Retrieves random cards as JSON.
     If API response is OK, creates a variable to hold the username and prepares cards.
     Card orientation is represented as 0 or 1 (card meanings are tied to orientation)
     Sends either the card name, or card name + * to represent a reversed card.
     """
-    cardLimit = 7
-    if numberOfCards > cardLimit:
-        numberOfCards = 7
+    if numberOfCards > CARD_LIMIT:
+        numberOfCards = CARD_LIMIT
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(f"https://rws-cards-api.herokuapp.com/api/v1/cards/random?n={numberOfCards}") as spread:
+    cards = await getRandomCards(numberOfCards)
 
-            if spread.status == 200:
-                someLines = '\n__ ' + '__ ' * 21  # buffer characters for visual formatting between messages
-                user = str(ctx.author)  # the discord username of whoever seeks wisdom
-                await ctx.send('Very well ' + user + someLines)
-                cards = await spread.json()
-                images = []
+    await ctx.send(f"Very well {str(ctx.author)}{SPACER}")
+    images = []
 
-                # Determines card orientation and posts message in sequence.
-                for cardIndex in range(numberOfCards):
-                    orientation = random.randint(0, 1)
-                    card = cards["cards"][cardIndex]
+    # Determines card orientation and posts message in sequence.
+    for card in cards["cards"]:
+        await sendDelimited(
+            ctx,
+            await getCardMessage(card),
+            delimiters=("```", "***")
+        )
+        image = await downloadCardImage(card)
+        images.append(await convertImage(image))
 
-                    if orientation == 0:
-                        meaning = card["meaning_up"]
-                        revTag = ''
-                    else:
-                        meaning = card["meaning_rev"]
-                        revTag = "[Rev.]"
+    finalSpread = await combineImageListHorizontal(images)
+    finalSpread.save(COMBINED_IMAGE_PATH)
 
-                    openFormatTags = "***```"
-                    closedFormatTags = "```***"
-                    message = "{}{}{}:\n\n{}{}{}".format(
-                        openFormatTags,
-                        revTag,
-                        card["name"],
-                        meaning,
-                        someLines,
-                        closedFormatTags
-                    )
+    # Sends the final combined image.
+    await ctx.send(
+        file=discord.File(COMBINED_IMAGE_PATH, "spread.jpg")
+    )
 
-                    await ctx.send(message)
 
-                    async with session.get("https://www.sacred-texts.com/tarot/pkt/img/"
-                                           + card["name_short"] +
-                                           ".jpg") \
-                            as image:
-
-                        # Appends each image to a list for manipulation.
-                        if image.status == 200:
-                            await imageList(image, images)
-
-                finalSpread = await combineImageListHorizontal(images)
-                finalSpread.save(combinedImagePath)
-
-                # Sends the final combined image.
-                await ctx.send(
-                    file=discord.File(combinedImagePath, f"spread.jpg"))
-
-            else:
-                await magicEightBall(ctx)
+async def getCardMessage(card: dict, orientation=random.randint(0, 1)) -> str:
+    """
+    Given a card and a orientation (of value 1 or 0) this will return a formatted
+    message as a string
+    @param card:
+    @param orientation:
+    @return:
+    """
+    meaning = card['meaning_up'] if orientation == 0 else card['meaning_rev']
+    revTag = "" if orientation == 0 else "[Rev.]"
+    message = "{}{}:\n\n{}{}".format(
+        revTag,
+        card["name"],
+        meaning,
+        SPACER,
+    )
+    return message
