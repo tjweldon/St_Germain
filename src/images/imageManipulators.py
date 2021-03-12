@@ -2,10 +2,14 @@ import io
 from PIL import Image
 
 
-async def imageList(image, startingList):
-    cardImage = io.BytesIO(await image.read())
-    imageConverted = Image.open(cardImage)
-    startingList.append(imageConverted)
+async def convertImage(image: bytes) -> Image:
+    """
+
+    @param image:
+    @return:
+    """
+    cardImage = io.BytesIO(image)
+    return Image.open(cardImage)
 
 
 async def combineImagePairHorizontal(im1, im2) -> Image:
